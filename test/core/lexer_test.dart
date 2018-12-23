@@ -30,7 +30,7 @@ void main() {
     expect(() => tokenize("0...1"), throwsInvalidCharacterError);
   });
   test("2c. Lexer should interpret operators", () {
-    for (String op in ["+", "-", "*", "/", "^"]) {
+    for (String op in ["+", "-", "*", "/", "^", "="]) {
       expect(tokenize("1 $op 2"), equals("1 $op 2"));
     }
   });
