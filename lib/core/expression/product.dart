@@ -1,3 +1,5 @@
+import 'package:computer_algebra_system/core/expression/fraction.dart';
+
 import "./expression.dart";
 import "./atom.dart";
 
@@ -18,6 +20,21 @@ class Product extends Expression {
     return flattened;
   }
 
+  Product simplifyProduct() {
+    Fraction product = Fraction.one;
+    List<Expression> factors = [];
+
+    for (final factor in this.factors.map((f) => f.simplify())) {
+      if (factor is Fraction) {
+        product *= factor;
+      } else {
+        factors.add(factor);
+      }
+    }
+    if (factors.length == 0 || product != Fraction.one) factors.add(product);
+    return Product(factors);
+  }
+
   @override
   get terms => factors;
 
@@ -28,6 +45,14 @@ class Product extends Expression {
       atoms.addAll(term.atoms);
     }
     return atoms;
+  }
+
+  @override
+  Expression simplify() {
+    final product = this.simplifyProduct();
+    if (product.factors.length == 1) return product.factors.first;
+    if (product.factors.length == 0) return Fraction.zero;
+    return product;
   }
 
   String toString() => "*";

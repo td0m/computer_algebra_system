@@ -9,6 +9,8 @@ abstract class Expression {
   List<Expression> terms = [];
   List<Atom> atoms = [];
 
+  Expression simplify() => this;
+
   /// Prints the expression tree to console for debugging purposes
   void printTree([int tabs = 0]) {
     print("  " * tabs + "$this");

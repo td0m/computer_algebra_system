@@ -1,6 +1,37 @@
+import 'package:computer_algebra_system/core/expression/expression.dart';
+import 'package:computer_algebra_system/core/expression/power.dart';
+import 'package:computer_algebra_system/core/expression/product.dart';
 import 'package:computer_algebra_system/core/lexer/fsm.dart';
 
 import "./atom.dart";
+
+class Surd {
+  final BigInt multiplier;
+  final BigInt value;
+
+  Surd(this.multiplier, this.value);
+}
+
+/// calculates the root of a big integer and returns a simplified surd
+Surd simplifySurd(BigInt n, BigInt exp) {
+  if (n == BigInt.zero) return Surd(BigInt.one, BigInt.zero);
+  if (n < BigInt.zero) throw Exception("No solution for a root of a negative");
+  if (exp < BigInt.zero) throw Exception("Negative root not supported");
+
+  BigInt multiplier = BigInt.one;
+  BigInt root = n;
+  BigInt i = BigInt.two;
+
+  while (Fraction.pow(i, exp) <= root) {
+    if (root % Fraction.pow(i, exp) == BigInt.zero) {
+      root = root ~/ Fraction.pow(i, exp);
+      multiplier *= i;
+    } else {
+      i += BigInt.one;
+    }
+  }
+  return Surd(multiplier, root);
+}
 
 class Fraction extends Atom implements Comparable<Fraction> {
   static Fraction zero = Fraction.fromInt(0);
@@ -83,7 +114,38 @@ class Fraction extends Atom implements Comparable<Fraction> {
   /// subtract a fraction
   operator -(Fraction other) => this + other.negate();
 
-  // TODO: implement the ^ operator
+  static BigInt pow(BigInt base, BigInt exponent) {
+    if (exponent < BigInt.zero) throw Exception();
+    if (exponent == BigInt.zero) return BigInt.one;
+    if (exponent == BigInt.one) return base;
+    return base * pow(base, exponent - BigInt.one);
+  }
+
+  Expression operator ^(Fraction other) {
+    // 1^(n/m) = 1
+    if (this == Fraction.one) return this;
+    // (a/b)^(-n/m) -> (b/a)^(n/m)
+    if (other < Fraction.zero) return reciprocal() ^ other.negate();
+
+    // a^n/b^n
+    Fraction base = Fraction(
+        pow(numerator, other.numerator), pow(denominator, other.numerator));
+
+    // m == 1 -> power is an integer
+    if (other.denominator == BigInt.one) return base;
+
+    Surd s1 = simplifySurd(base.numerator, other.denominator);
+    Surd s2 = simplifySurd(base.denominator, other.numerator);
+    final a = Fraction(s1.multiplier, s2.multiplier);
+    base = Fraction(s1.value, s2.value);
+    // base^1/m
+    final b = Power(base, Fraction(BigInt.one, other.denominator));
+
+    if (a == Fraction.one) return b;
+    if (base == Fraction.one) return a;
+
+    return Product([a, b]);
+  }
 
   @override
   int compareTo(Fraction other) {
