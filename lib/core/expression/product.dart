@@ -1,4 +1,7 @@
 import 'package:computer_algebra_system/core/expression/fraction.dart';
+import 'package:computer_algebra_system/core/expression/power.dart';
+import 'package:computer_algebra_system/core/expression/sum.dart';
+import 'package:computer_algebra_system/core/expression/variable.dart';
 import 'package:computer_algebra_system/core/expression/vector.dart';
 
 import "./expression.dart";
@@ -25,6 +28,7 @@ class Product extends Expression {
     Fraction product = Fraction.one;
     List<Expression> factors = [];
     Vector vector = Vector.empty;
+    Map<String, List<Expression>> map = {};
 
     for (final factor in this.factors.map((f) => f.simplify())) {
       if (factor is Fraction) {
@@ -32,11 +36,30 @@ class Product extends Expression {
       } else if (factor is Vector) {
         vector *= factor;
       } else {
-        factors.add(factor);
+        final vars = Expression.tryGetVariable(factor);
+        if (vars != null) {
+          final power = Expression.getPower(factor);
+          if (!map.containsKey(vars)) map[vars] = [];
+          map[vars].add(power);
+        } else
+          factors.add(factor);
       }
     }
+    for (final base in map.keys) {
+      // need to do basic product simplification here, in order to avoid a stack overflow
+      List<Expression> variables =
+          base.split("").map((s) => Variable(s)).toList();
+      Expression baseE = Product(variables);
+      if (variables.length == 1)
+        baseE = variables.first;
+      else if (variables.length == 0) baseE = Fraction.zero;
+
+      factors.add(Power(baseE, Sum(map[base])).simplify());
+    }
+
     if (factors.length == 0 || product != Fraction.one) factors.add(product);
     if (!vector.isEmpty()) return Product([vector * Product(factors)]);
+
     return Product(factors);
   }
 

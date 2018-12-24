@@ -1,3 +1,6 @@
+import 'package:computer_algebra_system/core/expression/power.dart';
+import 'package:computer_algebra_system/core/expression/variable.dart';
+
 import './atom.dart';
 import './fraction.dart';
 import './product.dart';
@@ -43,5 +46,58 @@ abstract class Expression {
       }
     }
     return out;
+  }
+
+  static bool isVariable(Expression e) {
+    for (final atom in e.atoms) {
+      if (atom is Variable) return true;
+    }
+    return false;
+  }
+
+  static Expression getPower(Expression e) {
+    if (e is Atom)
+      return Fraction.one;
+    else if (e is Power)
+      return e.right;
+    else if (e is Product) {
+      for (final term in e.terms) {
+        if (isVariable(term)) return getPower(term);
+      }
+    }
+    return Fraction.one;
+  }
+
+  static Fraction getFractionalCoefficient(Expression e) {
+    if (e is Variable) return Fraction.one;
+    if (e is Product) {
+      Fraction product = Fraction.one;
+      for (final term in e.terms) {
+        if (term is Fraction) product = product * term;
+      }
+      return product;
+    }
+    return Fraction.one;
+  }
+
+  static String tryGetVariable(Expression e) {
+    if (e is Variable) return e.name;
+    if (e is Product) {
+      List<String> vars = [];
+      for (final term in e.terms) {
+        if (isVariable(term)) vars.add(tryGetVariable(term));
+      }
+      vars.sort();
+      return vars.join();
+    }
+    if (e is Power) {
+      if (isVariable(e.left)) return tryGetVariable(e.left);
+    }
+    return null;
+  }
+
+  static Expression getBase(Expression e) {
+    if (e is Power) return e.left;
+    return e;
   }
 }

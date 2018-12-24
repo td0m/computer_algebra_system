@@ -59,7 +59,7 @@ void main() {
     expect(simplify("[1,2]+[2,2]"), equals("[3,4]"));
     expect(simplify("[1,2,3]+[2,2]"), equals("[3,4,3]"));
     expect(simplify("[1,2,3,4]+[4,3,2,1]"), equals("[5,5,5,5]"));
-    expect(simplify("[1,x]+[2,x]"), equals("[3,x+x]"));
+    expect(simplify("[1,x]+[2,0]"), equals("[3,x]"));
   });
   test("4.i Simplifier should subtract vectors", () {
     expect(simplify("[1,2]-[2,2]"), equals("[-1,0]"));
@@ -87,5 +87,44 @@ void main() {
     expect(simplify("[1,2]/[3,4]"), equals("[(1/3),(1/2)]"));
     expect(simplify("[1,2]*[3,4]"), equals("[3,8]"));
     expect(simplify("[2]/[3,3]"), equals("[(2/3),(1/3)]"));
+  });
+  test("4.o Simplifier should use basic index laws", () {
+    // x^0 = x
+    expect(simplify("x^0"), equals("1"));
+    // x^1 = x
+    expect(simplify("x^1"), equals("x"));
+    // x^a^b = (x^a)^b = x^(a+b)
+    expect(simplify("(x^2)^3"), equals("x^6"));
+    expect(simplify("(5*x^2)^3"), equals("x^6*125"));
+  });
+  test("4.p Simplifier should use more complex simplification rules", () {
+    // Summing
+    // ax^n+bx^n = (a+b)x^n
+    expect(simplify("x+0"), equals("x"));
+    expect(simplify("x+x"), equals("x*2"));
+    expect(simplify("x+x+x"), equals("x*3"));
+    expect(simplify("x+x+x+x+x"), equals("x*5"));
+    expect(simplify("x+x^2"), equals("x+x^2"));
+    expect(simplify("x+x^2+x"), equals("x*2+x^2"));
+    expect(simplify("x^2+5x^2+3x*2"), equals("x^2*6+x*6"));
+    expect(simplify("5x^2-2x^2+4x"), equals("x^2*3+x*4"));
+    expect(simplify("xyz+xzy"), equals("x*y*z*2"));
+    expect(simplify("5xy+10yx"), equals("x*y*15"));
+    expect(simplify("2^x+2^x"), equals("2^x*2"));
+    expect(simplify("2^x+2^y"), equals("2^x+2^y"));
+
+    expect(simplify("2^0.5+16^0.5"), equals("2^(1/2)+4"));
+    expect(simplify("2^0.5+16^0.5+2^(1/2)"), equals("2^(1/2)*2+4"));
+
+    // Multiplication
+    // x^a*x^b = x^(a+b)
+    expect(simplify("x*x"), equals("x^2"));
+    expect(simplify("x*x*x"), equals("x^3"));
+    expect(simplify("x*x*z"), equals("x^2*z"));
+    expect(simplify("x*x*z*x"), equals("x^3*z"));
+    expect(simplify("5*x*x*z*x"), equals("x^3*z*5"));
+    expect(simplify("x^2*x^5"), equals("x^7"));
+    // Expansion of terms not yet supported
+    expect(simplify("(x+2)*(x+2)"), equals("(x+2)*(x+2)"));
   });
 }

@@ -1,6 +1,12 @@
 import 'package:computer_algebra_system/core/expression/fraction.dart';
+import 'package:computer_algebra_system/core/expression/power.dart';
+import 'package:computer_algebra_system/core/expression/product.dart';
+import 'package:computer_algebra_system/core/expression/variable.dart';
 import 'package:computer_algebra_system/core/expression/vector.dart';
 import 'package:computer_algebra_system/core/errors.dart';
+import 'package:computer_algebra_system/core/lexer/fsm.dart';
+import 'package:computer_algebra_system/core/lexer/lexer.dart';
+import 'package:computer_algebra_system/core/parser.dart';
 
 import "./expression.dart";
 import "./atom.dart";
@@ -26,6 +32,7 @@ class Sum extends Expression {
     Fraction sum = Fraction.zero;
     Vector vector = Vector.empty;
     List<Expression> factors = [];
+    Map<String, Map<String, List<Expression>>> map = {};
 
     for (final factor in this.factors.map((f) => f.simplify())) {
       if (factor is Fraction) {
@@ -33,7 +40,21 @@ class Sum extends Expression {
       } else if (factor is Vector) {
         vector = vector + factor;
       } else {
-        factors.add(factor);
+        final vars = Expression.tryGetVariable(factor) ??
+            Expression.getBase(factor).toInfix();
+        final power = Expression.getPower(factor).toInfix();
+        if (!map.containsKey(vars)) map[vars] = {};
+        if (!map[vars].containsKey(power)) map[vars][power] = [];
+        map[vars][power].add(Expression.getFractionalCoefficient(factor));
+      }
+    }
+    for (final base in map.keys) {
+      for (final power in map[base].keys) {
+        final coefficients = map[base][power];
+        final baseE = Parser().parse(Lexer().tokenize(base));
+        final powerE = Parser().parse(Lexer().tokenize(power));
+        factors
+            .add(Product([Sum(coefficients), Power(baseE, powerE)]).simplify());
       }
     }
 
