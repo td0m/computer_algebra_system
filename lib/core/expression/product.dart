@@ -1,4 +1,5 @@
 import 'package:computer_algebra_system/core/expression/fraction.dart';
+import 'package:computer_algebra_system/core/expression/vector.dart';
 
 import "./expression.dart";
 import "./atom.dart";
@@ -23,15 +24,19 @@ class Product extends Expression {
   Product simplifyProduct() {
     Fraction product = Fraction.one;
     List<Expression> factors = [];
+    Vector vector = Vector.empty;
 
     for (final factor in this.factors.map((f) => f.simplify())) {
       if (factor is Fraction) {
         product *= factor;
+      } else if (factor is Vector) {
+        vector *= factor;
       } else {
         factors.add(factor);
       }
     }
     if (factors.length == 0 || product != Fraction.one) factors.add(product);
+    if (!vector.isEmpty()) return Product([vector * Product(factors)]);
     return Product(factors);
   }
 

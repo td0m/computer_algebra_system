@@ -1,5 +1,6 @@
 import 'package:computer_algebra_system/core/expression/fraction.dart';
 import 'package:computer_algebra_system/core/expression/product.dart';
+import 'package:computer_algebra_system/core/expression/vector.dart';
 
 import "./expression.dart";
 import "./binary.dart";
@@ -23,6 +24,10 @@ class Power extends Binary {
     if (left is Product) {
       final factors = left.factors.map((f) => Power(f, right));
       return Product(factors.toList()).simplify();
+    }
+    if (left is Vector) {
+      return Vector(
+          left.values.map((v) => Power(v, right).simplify()).toList());
     }
     return Power(left, right);
   }

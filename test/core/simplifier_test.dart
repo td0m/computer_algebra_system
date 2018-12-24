@@ -1,8 +1,12 @@
+import 'package:computer_algebra_system/core/errors.dart';
 import 'package:computer_algebra_system/core/lexer/lexer.dart';
 import 'package:computer_algebra_system/core/lexer/token.dart';
 import 'package:computer_algebra_system/core/expression/expression.dart';
 import 'package:computer_algebra_system/core/parser.dart';
 import "package:test/test.dart";
+
+final throwsIncompatibleTypesError =
+    throwsA(TypeMatcher<IncompatibleTypesError>());
 
 /// Convert the output of the simplified `parse` tree to a
 /// readable string format to make testing easier.
@@ -52,28 +56,36 @@ void main() {
     expect(simplify("2^(1/2)"), equals("2^(1/2)"));
   });
   test("4.h Simplifier should add vectors", () {
-    // TODO
+    expect(simplify("[1,2]+[2,2]"), equals("[3,4]"));
+    expect(simplify("[1,2,3]+[2,2]"), equals("[3,4,3]"));
+    expect(simplify("[1,2,3,4]+[4,3,2,1]"), equals("[5,5,5,5]"));
+    expect(simplify("[1,x]+[2,x]"), equals("[3,x+x]"));
   });
   test("4.i Simplifier should subtract vectors", () {
-    // TODO
+    expect(simplify("[1,2]-[2,2]"), equals("[-1,0]"));
+    expect(simplify("[1,2,3]-[2,2]"), equals("[-1,0,3]"));
   });
   test("4.j Simplifier should multiply vectors", () {
-    // TODO
+    expect(simplify("5*[2,4]"), equals("[10,20]"));
+    expect(simplify("0.25*[2,4]"), equals("[(1/2),1]"));
   });
   test("4.k Simplifier should divide vectors", () {
-    // TODO
+    expect(simplify("[150]/2"), equals("[75]"));
+    expect(simplify("[2,4]/2"), equals("[1,2]"));
   });
-  test(
-      "4.l Simplifier should throw error if trying to raise a vector to a power",
-      () {
-    // TODO
+  test("4.l Simplifier should be able to raise a vector to a power", () {
+    expect(simplify("2/[2,4]"), equals("[1,(1/2)]"));
+    expect(simplify("[9,16]^(1/2)"), equals("[3,4]"));
   });
   test(
       "4.m Simplifier should throw error if trying to add or subtract vectors and fractions",
       () {
-    // TODO
+    expect(() => simplify("[2,4]+2"), throwsIncompatibleTypesError);
+    expect(() => simplify("[2,4]+x"), throwsIncompatibleTypesError);
   });
-  test("4.n Simplifier should multiply & divide vectors by a number", () {
-    // TODO
+  test("4.n Simplifier should multiply & divide vectors by other vectors", () {
+    expect(simplify("[1,2]/[3,4]"), equals("[(1/3),(1/2)]"));
+    expect(simplify("[1,2]*[3,4]"), equals("[3,8]"));
+    expect(simplify("[2]/[3,3]"), equals("[(2/3),(1/3)]"));
   });
 }

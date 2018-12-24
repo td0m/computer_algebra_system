@@ -1,4 +1,6 @@
 import 'package:computer_algebra_system/core/expression/fraction.dart';
+import 'package:computer_algebra_system/core/expression/vector.dart';
+import 'package:computer_algebra_system/core/errors.dart';
 
 import "./expression.dart";
 import "./atom.dart";
@@ -22,17 +24,24 @@ class Sum extends Expression {
 
   Sum simplifySum() {
     Fraction sum = Fraction.zero;
+    Vector vector = Vector.empty;
     List<Expression> factors = [];
 
     for (final factor in this.factors.map((f) => f.simplify())) {
       if (factor is Fraction) {
         sum += factor;
+      } else if (factor is Vector) {
+        vector = vector + factor;
       } else {
         factors.add(factor);
       }
     }
 
     if (sum != Fraction.zero) factors.add(sum);
+    if (!vector.isEmpty()) {
+      if (factors.isNotEmpty) throw IncompatibleTypesError();
+      factors.add(vector);
+    }
 
     return Sum(factors);
   }
