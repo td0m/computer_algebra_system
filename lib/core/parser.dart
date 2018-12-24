@@ -182,6 +182,7 @@ class Parser {
       case "cos":
       case "tan":
       case "log":
+      case "magnitude":
         return true;
       default:
         return false;

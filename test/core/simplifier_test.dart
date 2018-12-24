@@ -8,6 +8,9 @@ import "package:test/test.dart";
 final throwsIncompatibleTypesError =
     throwsA(TypeMatcher<IncompatibleTypesError>());
 
+final throwsInvalidArgumentsError =
+    throwsA(TypeMatcher<InvalidArgumentsError>());
+
 /// Convert the output of the simplified `parse` tree to a
 /// readable string format to make testing easier.
 String simplify(String input) {
@@ -126,5 +129,20 @@ void main() {
     expect(simplify("x^2*x^5"), equals("x^7"));
     // Expansion of terms not yet supported
     expect(simplify("(x+2)*(x+2)"), equals("(x+2)*(x+2)"));
+  });
+  test("4.o Simplifier should calculate the magnitude of a vector", () {
+    expect(simplify("magnitude([3])"), equals("3"));
+    expect(simplify("magnitude([3,4])"), equals("5"));
+    expect(simplify("magnitude([2,5])"), equals("29^(1/2)"));
+    expect(simplify("magnitude([4,5])"), equals("41^(1/2)"));
+    expect(simplify("magnitude([6,7,8])"), equals("149^(1/2)"));
+    expect(simplify("magnitude([4,4])"), equals("4*2^(1/2)"));
+  });
+  test(
+      "4.p Simplifier should throw an error when trying to calculate the magnitude of something other than a vector",
+      () {
+    expect(() => simplify("magnitude(3)"), throwsInvalidArgumentsError);
+    expect(() => simplify("magnitude(3+5)"), throwsInvalidArgumentsError);
+    expect(() => simplify("magnitude(x)"), throwsInvalidArgumentsError);
   });
 }
