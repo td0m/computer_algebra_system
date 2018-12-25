@@ -135,7 +135,7 @@ class Fraction extends Atom implements Comparable<Fraction> {
     if (other.denominator == BigInt.one) return base;
 
     Surd s1 = simplifySurd(base.numerator, other.denominator);
-    Surd s2 = simplifySurd(base.denominator, other.numerator);
+    Surd s2 = simplifySurd(base.denominator, other.denominator);
     final a = Fraction(s1.multiplier, s2.multiplier);
     base = Fraction(s1.value, s2.value);
     // base^1/m
@@ -166,6 +166,13 @@ class Fraction extends Atom implements Comparable<Fraction> {
 
   operator >(other) {
     if (other is Fraction) return this.compareTo(other) > 0;
+  }
+
+  bool get isInteger => denominator == BigInt.one;
+
+  BigInt get asInteger {
+    if (!isInteger) throw Exception();
+    return numerator;
   }
 
   // used to make sure that the map of values doesn't contain
