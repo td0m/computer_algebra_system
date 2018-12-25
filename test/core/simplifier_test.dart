@@ -181,4 +181,9 @@ void main() {
     expect(simplify("tan(45)"), equals("1"));
     expect(simplify("tan(120)"), equals("3^(1/2)*-1"));
   });
+  test("4.t Simplifier should not allow invalid trigonometric functions", () {
+    expect(() => simplify("tan(90)"), throwsInvalidArgumentsError);
+    expect(() => simplify("tan(270)"), throwsInvalidArgumentsError);
+    expect(() => simplify("tan(-90)"), throwsInvalidArgumentsError);
+  });
 }
