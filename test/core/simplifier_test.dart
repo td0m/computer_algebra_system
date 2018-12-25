@@ -16,7 +16,7 @@ final throwsInvalidArgumentsError =
 String simplify(String input) {
   final List<Token> tokens = Lexer().tokenize(input);
   final Expression parsed = Parser().parse(tokens);
-  return parsed.simplify().toInfix();
+  return parsed.simplifyAll().toInfix();
 }
 
 /// This test assumes that the `Lexer` and `Parser` work as expected and pass all their unit tests
@@ -127,10 +127,10 @@ void main() {
     expect(simplify("x*x*z*x"), equals("x^3*z"));
     expect(simplify("5*x*x*z*x"), equals("x^3*z*5"));
     expect(simplify("x^2*x^5"), equals("x^7"));
-    // Expansion of terms not yet supported
-    expect(simplify("(x+2)*(x+2)"), equals("(x+2)*(x+2)"));
+    // supported complex term collection
+    expect(simplify("(x+2)*(x+2)"), equals("(x+2)^2"));
   });
-  test("4.o Simplifier should calculate the magnitude of a vector", () {
+  test("4.q Simplifier should calculate the magnitude of a vector", () {
     expect(simplify("magnitude([3])"), equals("3"));
     expect(simplify("magnitude([3,4])"), equals("5"));
     expect(simplify("magnitude([2,5])"), equals("29^(1/2)"));
@@ -139,19 +139,19 @@ void main() {
     expect(simplify("magnitude([4,4])"), equals("4*2^(1/2)"));
   });
   test(
-      "4.p Simplifier should throw an error when trying to calculate the magnitude of something other than a vector",
+      "4.r Simplifier should throw an error when trying to calculate the magnitude of something other than a vector",
       () {
     expect(() => simplify("magnitude(3)"), throwsInvalidArgumentsError);
     expect(() => simplify("magnitude(3+5)"), throwsInvalidArgumentsError);
     expect(() => simplify("magnitude(x)"), throwsInvalidArgumentsError);
   });
   test(
-      "4.q Simplifier should calculate the exact values of sin, cos and tan functions",
+      "4.s Simplifier should calculate the exact values of sin, cos and tan functions",
       () {
     // shouldn't have exact values
     expect(simplify("sin(10)"), equals("sin(10)"));
     expect(simplify("cos(10)"), equals("cos(10)"));
-    //expect(simplify("tan(10)"), equals("tan(10)"));
+    expect(simplify("tan(10)"), equals("tan(10)"));
 
     // sin
     expect(simplify("sin(0)"), equals("0"));
@@ -176,6 +176,9 @@ void main() {
     expect(simplify("cos(810)"), equals("0"));
 
     // tan
-    // TODO: tan!
+    expect(simplify("tan(0)"), equals("0"));
+    expect(simplify("tan(30)"), equals("(1/3)^(1/2)"));
+    expect(simplify("tan(45)"), equals("1"));
+    expect(simplify("tan(120)"), equals("3^(1/2)*-1"));
   });
 }

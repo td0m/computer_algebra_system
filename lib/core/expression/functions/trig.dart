@@ -1,3 +1,4 @@
+import 'package:computer_algebra_system/core/errors.dart';
 import 'package:computer_algebra_system/core/expression/expression.dart';
 import 'package:computer_algebra_system/core/expression/fraction.dart';
 import 'package:computer_algebra_system/core/expression/function.dart';
@@ -28,7 +29,7 @@ class Sin extends FunctionAtom {
 
   @override
   Expression simplify() {
-    final val = value.simplify();
+    final val = value.simplifyAll();
     if (val is Fraction && val.isInteger) {
       final sinValue = simplifySinValue(val.asInteger);
       final multiplier = sinValue ~/ BigInt.from(180);
@@ -37,8 +38,8 @@ class Sin extends FunctionAtom {
       if (key > BigInt.from(90)) key = BigInt.from(180) - key;
       if (exactSinValues.containsKey(key))
         return isNegative
-            ? Product([Fraction.minusOne, exactSinValues[key]]).simplify()
-            : exactSinValues[key].simplify();
+            ? Product([Fraction.minusOne, exactSinValues[key]]).simplifyAll()
+            : exactSinValues[key].simplifyAll();
     }
     return Sin(val);
   }
@@ -52,8 +53,8 @@ class Cos extends FunctionAtom {
 
   @override
   Expression simplify() {
-    final value = Sin(Sum([this.value, Fraction.fromInt(90)])).simplify();
-    if (value is Sin) return this;
+    final value = Sin(Sum([this.value, Fraction.fromInt(90)])).simplifyAll();
+    if (value is Sin) return Cos(this.value.simplifyAll());
     return value;
   }
 }
@@ -66,6 +67,14 @@ class Tan extends FunctionAtom {
 
   @override
   Expression simplify() {
-    return Tan(value.simplify());
+    final val = value.simplifyAll();
+    if (val is Fraction &&
+        val.isInteger &&
+        (val.asInteger - BigInt.from(90)) % BigInt.from(180) == BigInt.zero)
+      throw InvalidArgumentsError();
+    final s =
+        Parser().parse(Lexer().tokenize("sin($val)/cos($val)")).simplifyAll();
+    if (Sin(this.value).simplifyAll() is Sin) return Tan(val);
+    return s;
   }
 }

@@ -34,14 +34,15 @@ class Sum extends Expression {
     List<Expression> factors = [];
     Map<String, Map<String, List<Expression>>> map = {};
 
-    for (final factor in this.factors.map((f) => f.simplify())) {
+    for (final factor in this.factors.map((f) => f.simplifyAll())) {
       if (factor is Fraction) {
         sum += factor;
       } else if (factor is Vector) {
         vector = vector + factor;
       } else {
-        final vars = Expression.tryGetVariable(factor) ??
-            Expression.getBase(factor).toInfix();
+        String vars = Expression.tryGetVariable(factor);
+        if (vars == null || vars.length == 0)
+          vars = Expression.getBase(factor).toInfix();
         final power = Expression.getPower(factor).toInfix();
         if (!map.containsKey(vars)) map[vars] = {};
         if (!map[vars].containsKey(power)) map[vars][power] = [];
@@ -53,8 +54,8 @@ class Sum extends Expression {
         final coefficients = map[base][power];
         final baseE = Parser().parse(Lexer().tokenize(base));
         final powerE = Parser().parse(Lexer().tokenize(power));
-        factors
-            .add(Product([Sum(coefficients), Power(baseE, powerE)]).simplify());
+        factors.add(
+            Product([Sum(coefficients), Power(baseE, powerE)]).simplifyAll());
       }
     }
 

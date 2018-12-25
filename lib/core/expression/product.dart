@@ -3,6 +3,8 @@ import 'package:computer_algebra_system/core/expression/power.dart';
 import 'package:computer_algebra_system/core/expression/sum.dart';
 import 'package:computer_algebra_system/core/expression/variable.dart';
 import 'package:computer_algebra_system/core/expression/vector.dart';
+import 'package:computer_algebra_system/core/lexer/lexer.dart';
+import 'package:computer_algebra_system/core/parser.dart';
 
 import "./expression.dart";
 import "./atom.dart";
@@ -36,27 +38,36 @@ class Product extends Expression {
       } else if (factor is Vector) {
         vector *= factor;
       } else {
-        final vars = Expression.tryGetVariable(factor);
-        if (vars != null && vars.length != 0) {
-          final power = Expression.getPower(factor);
-          if (!map.containsKey(vars)) map[vars] = [];
-          map[vars].add(power);
-        } else
-          factors.add(factor);
+        String vars = Expression.tryGetVariable(factor);
+        Expression power = Expression.getPower(factor);
+        if (vars == null || vars.length == 0) {
+          Expression base = Expression.getBase(factor);
+          if (base is Fraction &&
+              base != Fraction.one &&
+              base.numerator == BigInt.one &&
+              base.denominator > BigInt.one) {
+            base = (base as Fraction).reciprocal();
+            power = Product([power, Fraction.minusOne]).simplifyAll();
+          }
+          vars = base.toInfix();
+        }
+        if (!map.containsKey(vars)) map[vars] = [];
+        map[vars].add(power);
       }
     }
     for (final base in map.keys) {
-      // need to do basic product simplification here, in order to avoid a stack overflow
-      List<Expression> variables =
-          base.split("").map((s) => Variable(s)).toList();
-      Expression baseE = Product(variables);
-      if (variables.length == 1)
-        baseE = variables.first;
-      else if (variables.length == 0) baseE = Fraction.zero;
-
-      factors.add(Power(baseE, Sum(map[base])).simplify());
+      // need to do basic product simplification here in order to avoid a stack overflow
+      Expression baseE = Parser().parse(Lexer().tokenize(base));
+      if (baseE is Product && baseE.factors.length == 1)
+        baseE = (baseE as Product).factors.first;
+      else if (baseE is Product && baseE.factors.length == 0)
+        baseE = Fraction.zero;
+      baseE.simplified = true;
+      final powerE = Sum(map[base]).simplifyAll();
+      factors.add(Power(baseE, powerE).simplifyAll());
     }
 
+    if (product == Fraction.zero) return Product([]);
     if (factors.length == 0 || product != Fraction.one) factors.add(product);
     if (!vector.isEmpty()) return Product([vector * Product(factors)]);
 
@@ -77,7 +88,8 @@ class Product extends Expression {
 
   @override
   Expression simplify() {
-    final product = simplifyProduct(factors.map((f) => f.simplify()).toList());
+    final product =
+        simplifyProduct(flatten(factors.map((f) => f.simplifyAll()).toList()));
     if (product.factors.length == 1) return product.factors.first;
     if (product.factors.length == 0) return Fraction.zero;
     return product;

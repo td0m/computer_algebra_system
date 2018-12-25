@@ -14,20 +14,20 @@ class Power extends Binary {
 
   @override
   Expression simplify() {
-    final left = this.left.simplify();
-    final right = this.right.simplify();
+    final left = this.left.simplifyAll();
+    final right = this.right.simplifyAll();
     if (right is Fraction && right == Fraction.one) return left;
     if (right is Fraction && right == Fraction.zero) return Fraction.one;
     if (left is Fraction && right is Fraction) return left ^ right;
     if (left is Power)
-      return Power(left.left, Product([left.right, right])).simplify();
+      return Power(left.left, Product([left.right, right])).simplifyAll();
     if (left is Product) {
       final factors = left.factors.map((f) => Power(f, right));
-      return Product(factors.toList()).simplify();
+      return Product(factors.toList()).simplifyAll();
     }
     if (left is Vector) {
       return Vector(
-          left.values.map((v) => Power(v, right).simplify()).toList());
+          left.values.map((v) => Power(v, right).simplifyAll()).toList());
     }
     return Power(left, right);
   }

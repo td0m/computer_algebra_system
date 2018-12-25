@@ -11,6 +11,12 @@ import '../parser.dart';
 abstract class Expression {
   List<Expression> terms = [];
   List<Atom> atoms = [];
+  bool simplified = false;
+
+  Expression simplifyAll() {
+    if (simplified) return this;
+    return simplify();
+  }
 
   Expression simplify() => this;
 

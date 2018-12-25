@@ -22,7 +22,7 @@ class Vector extends Atom {
       final a = i < values.length ? values[i] : Fraction.zero;
       final b = i < other.values.length ? other.values[i] : Fraction.zero;
 
-      summed.add(Sum([a, b]).simplify());
+      summed.add(Sum([a, b]).simplifyAll());
     }
 
     return Vector(summed);
@@ -37,13 +37,13 @@ class Vector extends Atom {
         final b =
             i < multiplier.values.length ? multiplier.values[i] : Fraction.one;
 
-        product.add(Product([a, b]).simplify());
+        product.add(Product([a, b]).simplifyAll());
       }
 
       return Vector(product);
     }
     return Vector(
-        values.map((v) => Product([v, multiplier]).simplify()).toList());
+        values.map((v) => Product([v, multiplier]).simplifyAll()).toList());
   }
 
   String toString() => "[${values.map((v) => v.toInfix()).join(",")}]";

@@ -51,6 +51,7 @@ class Fraction extends Atom implements Comparable<Fraction> {
       numerator = f.numerator;
       denominator = f.denominator;
     }
+    this.simplified = true;
   }
 
   /// add an int constructor for more readable code

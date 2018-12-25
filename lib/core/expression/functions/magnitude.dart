@@ -15,6 +15,6 @@ class Magnitude extends FunctionAtom {
   Expression simplify() {
     final termsSquared =
         vector.values.map((v) => Power(v, Fraction.fromInt(2))).toList();
-    return Power(Sum(termsSquared), Fraction.fromInt(1, 2)).simplify();
+    return Power(Sum(termsSquared), Fraction.fromInt(1, 2)).simplifyAll();
   }
 }
