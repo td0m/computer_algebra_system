@@ -18,6 +18,7 @@ class Power extends Binary {
     final right = this.right.simplifyAll();
     if (right is Fraction && right == Fraction.one) return left;
     if (right is Fraction && right == Fraction.zero) return Fraction.one;
+    if (left is Fraction && left == Fraction.zero) return Fraction.zero;
     if (left is Fraction && right is Fraction) return left ^ right;
     if (left is Power)
       return Power(left.left, Product([left.right, right])).simplifyAll();
