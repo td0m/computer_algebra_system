@@ -10,10 +10,10 @@ import 'package:computer_algebra_system/core/expression/vector.dart';
 abstract class FunctionAtom extends Atom {
   static FunctionAtom create(String name, List<Expression> args) {
     // trigonometric functions
-    if (name == "sin" && args.length == 1) return Sin.create(args.first);
+    if (name == "sin" && args.length == 1) return Sin(args.first);
     if (name == "cos" && args.length == 1)
-      return Cos.create(args.first);
-    else if (name == "tan" && args.length == 1) return Tan.create(args.first);
+      return Cos(args.first);
+    else if (name == "tan" && args.length == 1) return Tan(args.first);
 
     // logarithms
     if (name == "log" && args.length == 1)

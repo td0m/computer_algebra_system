@@ -145,4 +145,37 @@ void main() {
     expect(() => simplify("magnitude(3+5)"), throwsInvalidArgumentsError);
     expect(() => simplify("magnitude(x)"), throwsInvalidArgumentsError);
   });
+  test(
+      "4.q Simplifier should calculate the exact values of sin, cos and tan functions",
+      () {
+    // shouldn't have exact values
+    expect(simplify("sin(10)"), equals("sin(10)"));
+    expect(simplify("cos(10)"), equals("cos(10)"));
+    //expect(simplify("tan(10)"), equals("tan(10)"));
+
+    // sin
+    expect(simplify("sin(0)"), equals("0"));
+    expect(simplify("sin(30)"), equals("(1/2)"));
+    expect(simplify("sin(45)"), equals("(1/2)^(1/2)"));
+    expect(simplify("sin(60)"), equals("3^(1/2)*(1/2)"));
+    expect(simplify("sin(120)"), equals("3^(1/2)*(1/2)"));
+    expect(simplify("sin(90)"), equals("1"));
+    expect(simplify("sin(360)"), equals("0"));
+    expect(simplify("sin(720)"), equals("0"));
+    expect(simplify("sin(810)"), equals("1"));
+
+    // cos
+    expect(simplify("cos(0)"), equals("1"));
+    expect(simplify("cos(30)"), equals("3^(1/2)*(1/2)"));
+    expect(simplify("cos(45)"), equals("(1/2)^(1/2)"));
+    expect(simplify("cos(60)"), equals("(1/2)"));
+    expect(simplify("cos(90)"), equals("0"));
+    expect(simplify("cos(180)"), equals("-1"));
+    expect(simplify("cos(360)"), equals("1"));
+    expect(simplify("cos(720)"), equals("1"));
+    expect(simplify("cos(810)"), equals("0"));
+
+    // tan
+    // TODO: tan!
+  });
 }
