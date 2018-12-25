@@ -17,8 +17,8 @@ abstract class FunctionAtom extends Atom {
 
     // logarithms
     if (name == "log" && args.length == 1)
-      return Log.create(Fraction.fromInt(10), args[0]);
-    if (name == "log" && args.length == 2) return Log.create(args[0], args[1]);
+      return Log(Fraction.fromInt(10), args[0]);
+    if (name == "log" && args.length == 2) return Log(args[0], args[1]);
     if (name == "magnitude" && args.length == 1 && args.first is Vector)
       return Magnitude(args.first as Vector);
     throw InvalidArgumentsError();
