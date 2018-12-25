@@ -24,20 +24,20 @@ class Product extends Expression {
     return flattened;
   }
 
-  Product simplifyProduct() {
+  static Product simplifyProduct(List<Expression> simplifiedFactorList) {
     Fraction product = Fraction.one;
     List<Expression> factors = [];
     Vector vector = Vector.empty;
     Map<String, List<Expression>> map = {};
 
-    for (final factor in this.factors.map((f) => f.simplify())) {
+    for (final factor in simplifiedFactorList) {
       if (factor is Fraction) {
         product *= factor;
       } else if (factor is Vector) {
         vector *= factor;
       } else {
         final vars = Expression.tryGetVariable(factor);
-        if (vars != null) {
+        if (vars != null && vars.length != 0) {
           final power = Expression.getPower(factor);
           if (!map.containsKey(vars)) map[vars] = [];
           map[vars].add(power);
@@ -77,7 +77,7 @@ class Product extends Expression {
 
   @override
   Expression simplify() {
-    final product = this.simplifyProduct();
+    final product = simplifyProduct(factors.map((f) => f.simplify()).toList());
     if (product.factors.length == 1) return product.factors.first;
     if (product.factors.length == 0) return Fraction.zero;
     return product;
