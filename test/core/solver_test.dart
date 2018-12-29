@@ -6,8 +6,12 @@ import 'package:computer_algebra_system/core/parser.dart';
 import 'package:computer_algebra_system/core/solver/solve.dart';
 import "package:test/test.dart";
 
-/// Convert the output of the simplified `parse` tree to a
-/// readable string format to make testing easier.
+String simplify(String input) {
+  final List<Token> tokens = Lexer().tokenize(input);
+  final Expression parsed = Parser().parse(tokens);
+  return parsed.simplifyAll().toInfix();
+}
+
 List<Solution> solve(String input) {
   final List<Token> tokens = Lexer().tokenize(input);
   final Expression parsed = Parser().parse(tokens).simplifyAll();
@@ -38,6 +42,17 @@ void main() {
     expect(solve("x^2+2x+1=0"), equals([solution("x", "-1")]));
     expect(solve("2x^2+5x-12=0"),
         equals([solution("x", "3/2"), solution("x", "-4")]));
+  });
+  test("5.d Solver should differentiate an expanded sum of atoms", () {
+    expect(simplify("differentiate(5x+5)"), equals("5"));
+    expect(simplify("differentiate(5x^2)"), equals("x*10"));
+    expect(simplify("differentiate(5x^3+2x)"), equals("x^2*15+2"));
+    expect(simplify("differentiate(x^3+2x+2x)"), equals("x^2*3+4"));
+  });
+  test("5.d Solver should integrate an expanded sum of atoms", () {
+    expect(simplify("integrate(5)"), equals("x*5+c"));
+    expect(simplify("integrate(5x)"), equals("x^2*(5/2)+c"));
+    expect(simplify("integrate(6x+5)"), equals("x^2*3+x*5+c"));
   });
   test("5.f Solver should solve exponential equations", () {
     expect(solve("5^x=25"), equals([solution("x", "2")]));

@@ -102,6 +102,28 @@ abstract class Expression {
     return null;
   }
 
+  static Expression getXExponent(Expression e) {
+    if (e is Variable && e.name == "x") return Fraction.one;
+    if (e is Power && e.left is Variable && (e.left as Variable).name == "x")
+      return e.right;
+    if (e is Product) {
+      for (final term in e.factors) {
+        if (term is Variable || term is Power || term is Product)
+          return getXExponent(term);
+      }
+    }
+    throw Exception();
+  }
+
+  static bool onlyContainsX(Expression e) {
+    try {
+      getXExponent(e);
+      return true;
+    } catch (err) {
+      return false;
+    }
+  }
+
   static Expression getBase(Expression e) {
     if (e is Power) return e.left;
     return e;

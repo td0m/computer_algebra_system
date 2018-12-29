@@ -183,6 +183,8 @@ class Parser {
       case "tan":
       case "log":
       case "magnitude":
+      case "differentiate":
+      case "integrate":
         return true;
       default:
         return false;
