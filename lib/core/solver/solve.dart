@@ -11,8 +11,11 @@ import "../expression/functions/log.dart";
 class Solution {
   final String name;
   final Expression value;
+  final bool isSimultaneous;
 
-  Solution(this.name, Expression value) : this.value = value.simplifyAll();
+  Solution(this.name, Expression value, {bool isSimultaneous = false})
+      : this.value = value.simplifyAll(),
+        this.isSimultaneous = isSimultaneous;
 
   @override
   toString() => "$name = ${value.toInfix()}";
@@ -90,31 +93,45 @@ List<Solution> solveEquality(Expression e) {
       final l2 = left.factors[1];
       if (Expression.isVariable(l1) &&
           Expression.isVariable(l2) &&
-          Expression.tryGetVariable(l1) == Expression.tryGetVariable(l2) &&
           Expression.tryGetVariable(l1).length == 1) {
-        Fraction a = Expression.getFractionalCoefficient(l1);
-        Fraction b = Expression.getFractionalCoefficient(l2);
+        if (Expression.tryGetVariable(l1) == Expression.tryGetVariable(l2)) {
+          Fraction a = Expression.getFractionalCoefficient(l1);
+          Fraction b = Expression.getFractionalCoefficient(l2);
 
-        Fraction p1 = Expression.getPower(l1);
-        Fraction p2 = Expression.getPower(l2);
+          Fraction p1 = Expression.getPower(l1);
+          Fraction p2 = Expression.getPower(l2);
 
-        if (p1 == Fraction.fromInt(2) && p2 == Fraction.fromInt(1)) {
-        } else if (p1 == Fraction.fromInt(1) && p2 == Fraction.fromInt(2)) {
-          Fraction temp = a;
-          a = b;
-          b = temp;
+          if (p1 == Fraction.fromInt(2) && p2 == Fraction.fromInt(1)) {
+          } else if (p1 == Fraction.fromInt(1) && p2 == Fraction.fromInt(2)) {
+            Fraction temp = a;
+            a = b;
+            b = temp;
+          } else {
+            throw Exception("invalid powers $p1 and $p2");
+          }
+
+          Fraction c = (right.factors.first as Fraction).negate();
+          String symbol = Expression.tryGetVariable(l1);
+
+          final solutions = solveQuadratic(a, b, c);
+          return solutions.map((result) => Solution(symbol, result)).toList();
         } else {
-          throw Exception("invalid powers $p1 and $p2");
+          return [
+            Solution(
+              Expression.tryGetVariable(l1),
+              Expression.getFractionalCoefficient(l1),
+              isSimultaneous: true,
+            ),
+            Solution(
+              Expression.tryGetVariable(l2),
+              Expression.getFractionalCoefficient(l2),
+              isSimultaneous: true,
+            ),
+            Solution("_", right, isSimultaneous: true)
+          ];
         }
-
-        Fraction c = (right.factors.first as Fraction).negate();
-        String symbol = Expression.tryGetVariable(l1);
-
-        final solutions = solveQuadratic(a, b, c);
-        return solutions.map((result) => Solution(symbol, result)).toList();
       }
     }
-
     print("${left.toInfix()} = ${right.toInfix()}");
   }
   throw Exception("equation not supported");
@@ -144,3 +161,43 @@ List<Expression> solveQuadratic(Fraction a, Fraction b, Fraction c) {
 }
 
 Expression sqrt(Fraction other) => other ^ Fraction.fromInt(1, 2);
+
+List<Solution> solveSimultaneously(
+  List<Solution> first,
+  List<Solution> second,
+) {
+  var map = <String, List<Fraction>>{};
+  final solutions = first;
+  solutions.addAll(second);
+
+  for (final s in solutions) {
+    if (!map.containsKey(s.name)) map[s.name] = [];
+    map[s.name].add(s.value);
+  }
+  List<Fraction> a;
+  List<Fraction> b;
+  List<Fraction> c;
+  String aKey;
+  String bKey;
+  if (map.keys.length != 3) throw Exception();
+  for (final key in map.keys) {
+    if (map[key].length != 2) throw Exception("not a simultaneous equation");
+    if (key == "_")
+      c = map[key];
+    else if (a == null) {
+      a = map[key];
+      aKey = key;
+    } else {
+      b = map[key];
+      bKey = key;
+    }
+  }
+  final aResult =
+      ((c[0] * b[1]) - (b[0] * c[1])) / ((b[1] * a[0]) - (a[1] * b[0]));
+  final bResult =
+      ((c[1] * a[0]) - (a[1] * c[0])) / ((b[1] * a[0]) - (a[1] * b[0]));
+  return [
+    Solution(aKey, aResult),
+    Solution(bKey, bResult),
+  ];
+}
