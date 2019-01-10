@@ -186,7 +186,7 @@ class Fraction extends Atom implements Comparable<Fraction> {
   /// converts fraction to a string format
   ///
   /// e.g.
-  ///    1/2 -> 1/2
+  ///    1/2 -> (1/2)
   ///    2/1 -> 2
   @override
   String toString() {

@@ -15,6 +15,7 @@ class Vector extends Atom {
 
   bool isEmpty() => values.length == 0;
 
+  // add two vectors
   Vector operator +(Vector other) {
     List<Expression> summed = [];
 
@@ -28,7 +29,9 @@ class Vector extends Atom {
     return Vector(summed);
   }
 
+  // dot product / multiplication based on the "multiplier"
   Vector operator *(Expression multiplier) {
+    // calculate the dot product
     if (multiplier is Vector) {
       List<Expression> product = [];
 
@@ -42,6 +45,7 @@ class Vector extends Atom {
 
       return Vector(product);
     }
+    // multiplies all of the terms in the vector by the multiplier
     return Vector(
         values.map((v) => Product([v, multiplier]).simplifyAll()).toList());
   }

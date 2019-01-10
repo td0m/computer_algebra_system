@@ -11,8 +11,12 @@ import '../parser.dart';
 abstract class Expression {
   List<Expression> terms = [];
   List<Atom> atoms = [];
+
+  /// defines whether the equation has already been simplified
+  /// used to prevent some simplification algorithms from running recursively forever
   bool simplified = false;
 
+  /// only simplifies if the equation isn't already simplified
   Expression simplifyAll() {
     if (simplified) return this;
     return simplify();
@@ -54,6 +58,7 @@ abstract class Expression {
     return out;
   }
 
+  /// returns true if the expression contains a variable
   static bool isVariable(Expression e) {
     for (final atom in e.atoms) {
       if (atom is Variable) return true;
@@ -61,6 +66,9 @@ abstract class Expression {
     return false;
   }
 
+  /// returns the power of an expression
+  ///
+  /// e.g. f(x^3) -> 3
   static Expression getPower(Expression e) {
     if (e is Atom)
       return Fraction.one;
@@ -74,6 +82,9 @@ abstract class Expression {
     return Fraction.one;
   }
 
+  /// gets a fractional coefficient of an expression
+  ///
+  /// e.g. f(5x^2) -> 5
   static Fraction getFractionalCoefficient(Expression e) {
     if (e is Variable) return Fraction.one;
     if (e is Product) {
@@ -86,6 +97,9 @@ abstract class Expression {
     return Fraction.one;
   }
 
+  /// gets the string sequence of variables and sorts them
+  ///
+  /// e.g. f(5xzy) -> xyz
   static String tryGetVariable(Expression e) {
     if (e is Variable) return e.name;
     if (e is Product) {
@@ -102,6 +116,9 @@ abstract class Expression {
     return null;
   }
 
+  /// gets the exponent of x
+  /// throws an exception if not found
+  /// used by differentiation and integration
   static Expression getXExponent(Expression e) {
     if (e is Variable && e.name == "x") return Fraction.one;
     if (e is Power && e.left is Variable && (e.left as Variable).name == "x")
@@ -115,6 +132,8 @@ abstract class Expression {
     throw Exception();
   }
 
+  /// returns true if other variables used or if it doesn't contain x
+  /// used by differentiation and integration
   static bool onlyContainsX(Expression e) {
     try {
       getXExponent(e);
@@ -124,6 +143,10 @@ abstract class Expression {
     }
   }
 
+  /// returns the base of a power, or the whole expression if it's not a power
+  /// e.g.
+  ///     f(x^2) -> x
+  ///     f(x+2) -> x+2
   static Expression getBase(Expression e) {
     if (e is Power) return e.left;
     return e;

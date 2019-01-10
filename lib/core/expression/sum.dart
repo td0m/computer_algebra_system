@@ -28,6 +28,10 @@ class Sum extends Expression {
     return flattened;
   }
 
+  /// Reduces the amount of terms in a sum so that they're in the simplest possible form
+  ///
+  /// e.g. simplifySum(5x+x) -> 6x
+  /// e.g. simplifySum(5x+5x+5) -> 10x+5
   Sum simplifySum() {
     Fraction sum = Fraction.zero;
     Vector vector = Vector.empty;
@@ -82,7 +86,7 @@ class Sum extends Expression {
 
   @override
   Expression simplify() {
-    final sum = this.simplifySum();
+    final sum = simplifySum();
     if (sum.factors.length == 1) return sum.factors.first;
     if (sum.factors.length == 0) return Fraction.zero;
     return sum;

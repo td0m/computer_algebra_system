@@ -26,6 +26,7 @@ class Solution {
   }
 }
 
+// solves algebraic equation
 List<Solution> solveEquality(Expression e) {
   if (e is Equality) {
     // rearrange numbers to right, unknows to the right
@@ -73,6 +74,7 @@ List<Solution> solveEquality(Expression e) {
         }
       }
 
+      // if any of the coefficients on the left side are fractions, they are moved to the right
       if (l is Product) {
         List<Expression> newLeft = [];
         Expression newRight = right;
@@ -86,14 +88,18 @@ List<Solution> solveEquality(Expression e) {
           }
         }
         return solveEquality(
-            Equality(Product(newLeft), newRight).simplifyAll());
+          Equality(Product(newLeft), newRight).simplifyAll(),
+        );
       }
     } else if (left.factors.length == 2) {
+      // two factors on the left
       final l1 = left.factors[0];
       final l2 = left.factors[1];
+
       if (Expression.isVariable(l1) &&
           Expression.isVariable(l2) &&
           Expression.tryGetVariable(l1).length == 1) {
+        // quadratic
         if (Expression.tryGetVariable(l1) == Expression.tryGetVariable(l2)) {
           Fraction a = Expression.getFractionalCoefficient(l1);
           Fraction b = Expression.getFractionalCoefficient(l2);
@@ -115,7 +121,9 @@ List<Solution> solveEquality(Expression e) {
 
           final solutions = solveQuadratic(a, b, c);
           return solutions.map((result) => Solution(symbol, result)).toList();
-        } else {
+        }
+        // simultaneous equation
+        else {
           return [
             Solution(
               Expression.tryGetVariable(l1),

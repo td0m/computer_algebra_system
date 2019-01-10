@@ -1,6 +1,4 @@
-import 'package:computer_algebra_system/core/expression/equality.dart';
 import 'package:computer_algebra_system/core/expression/expression.dart';
-import 'package:computer_algebra_system/core/expression/fraction.dart';
 import 'package:computer_algebra_system/core/lexer/lexer.dart';
 import 'package:computer_algebra_system/core/lexer/token.dart';
 import 'package:computer_algebra_system/core/parser.dart';

@@ -12,6 +12,8 @@ abstract class Binary extends Expression {
 
   Binary(this.operator, this.left, this.right);
 
+  /// this function creates a binary tree based on the operand.
+  /// it converts subtraction to addition and division to multiplication to reduce the complexity
   static Expression create(String op, Expression left, Expression right) {
     if (op == "+") return Sum([left, right]);
     // a-b => a+(-1)(b)

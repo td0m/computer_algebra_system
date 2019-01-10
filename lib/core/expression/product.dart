@@ -1,7 +1,6 @@
 import 'package:computer_algebra_system/core/expression/fraction.dart';
 import 'package:computer_algebra_system/core/expression/power.dart';
 import 'package:computer_algebra_system/core/expression/sum.dart';
-import 'package:computer_algebra_system/core/expression/variable.dart';
 import 'package:computer_algebra_system/core/expression/vector.dart';
 import 'package:computer_algebra_system/core/lexer/lexer.dart';
 import 'package:computer_algebra_system/core/parser.dart';
@@ -26,6 +25,10 @@ class Product extends Expression {
     return flattened;
   }
 
+  /// Reduces the amount of terms in a product so that they're in the simplest possible form
+  ///
+  /// e.g. simplifySum(5x+x) -> 6x
+  /// e.g. simplifySum(5x+5x+5) -> 10x+5
   static Product simplifyProduct(List<Expression> simplifiedFactorList) {
     Fraction product = Fraction.one;
     List<Expression> factors = [];
@@ -67,7 +70,9 @@ class Product extends Expression {
       factors.add(Power(baseE, powerE).simplifyAll());
     }
 
+    // we still need to return a product even if the answer is 0
     if (product == Fraction.zero) return Product([]);
+    // add the fractional product if there are no variable factors or the product isn't one
     if (factors.length == 0 || product != Fraction.one) factors.add(product);
     if (!vector.isEmpty()) return Product([vector * Product(factors)]);
 

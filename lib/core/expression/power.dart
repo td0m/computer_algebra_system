@@ -16,9 +16,13 @@ class Power extends Binary {
   Expression simplify() {
     final left = this.left.simplifyAll();
     final right = this.right.simplifyAll();
+    // x^1 = x
     if (right is Fraction && right == Fraction.one) return left;
+    // x^0 = 1
     if (right is Fraction && right == Fraction.zero) return Fraction.one;
+    // 0^a = 0
     if (left is Fraction && left == Fraction.zero) return Fraction.zero;
+    // a^b = simplify(a^b)
     if (left is Fraction && right is Fraction) return left ^ right;
     if (left is Power)
       return Power(left.left, Product([left.right, right])).simplifyAll();

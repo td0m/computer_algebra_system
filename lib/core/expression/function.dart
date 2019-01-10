@@ -22,8 +22,12 @@ abstract class FunctionAtom extends Atom {
     if (name == "log" && args.length == 1)
       return Log(Fraction.fromInt(10), args[0]);
     if (name == "log" && args.length == 2) return Log(args[0], args[1]);
+
+    // magnitude
     if (name == "magnitude" && args.length == 1 && args.first is Vector)
       return Magnitude(args.first as Vector);
+
+    // calculus (differentiation and integration)
     if (name == "differentiate" && args.length == 1) {
       return Differentiate(Sum([args.first]).simplifySum());
     }
