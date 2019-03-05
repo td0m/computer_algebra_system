@@ -11,6 +11,10 @@ import 'package:computer_algebra_system/core/expression/sum.dart';
 import 'package:computer_algebra_system/core/expression/vector.dart';
 
 abstract class FunctionAtom extends Atom {
+  // takes a function's name and its already parsed arguments
+  // validates the arguments based on the function
+  // returns a function atom expression
+  // throws InvalidArgumentsError if arguments do not match the function call.
   static FunctionAtom create(String name, List<Expression> args) {
     // trigonometric functions
     if (name == "sin" && args.length == 1) return Sin(args.first);

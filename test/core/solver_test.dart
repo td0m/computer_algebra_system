@@ -1,4 +1,3 @@
-import 'package:computer_algebra_system/core/expression/fraction.dart';
 import 'package:computer_algebra_system/core/lexer/lexer.dart';
 import 'package:computer_algebra_system/core/lexer/token.dart';
 import 'package:computer_algebra_system/core/expression/expression.dart';
@@ -15,7 +14,7 @@ String simplify(String input) {
 List<Solution> solve(String input) {
   final List<Token> tokens = Lexer().tokenize(input);
   final Expression parsed = Parser().parse(tokens).simplifyAll();
-  return solveEquality(parsed);
+  return Solver.solveEquality(parsed);
 }
 
 Solution solution(String variable, String value) {

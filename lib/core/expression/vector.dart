@@ -1,4 +1,3 @@
-import 'package:computer_algebra_system/core/errors.dart';
 import 'package:computer_algebra_system/core/expression/expression.dart';
 import 'package:computer_algebra_system/core/expression/fraction.dart';
 import 'package:computer_algebra_system/core/expression/product.dart';

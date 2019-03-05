@@ -128,13 +128,14 @@ class Fraction extends Atom implements Comparable<Fraction> {
     // (a/b)^(-n/m) -> (b/a)^(n/m)
     if (other < Fraction.zero) return reciprocal() ^ other.negate();
 
-    // a^n/b^n
+    // (a/b)^n -> a^n/b^n
     Fraction base = Fraction(
         pow(numerator, other.numerator), pow(denominator, other.numerator));
 
     // m == 1 -> power is an integer
     if (other.denominator == BigInt.one) return base;
 
+    // deals with the denominator by getting the square root of each numerator and denominator
     Surd s1 = simplifySurd(base.numerator, other.denominator);
     Surd s2 = simplifySurd(base.denominator, other.denominator);
     final a = Fraction(s1.multiplier, s2.multiplier);
@@ -175,13 +176,6 @@ class Fraction extends Atom implements Comparable<Fraction> {
     if (!isInteger) throw Exception();
     return numerator;
   }
-
-  // used to make sure that the map of values doesn't contain
-  // different values with same powers
-  // read more about how hashCode and == are used:
-  // https://stackoverflow.com/questions/1894377/understanding-the-workings-of-equals-and-hashcode-in-a-hashmap
-  @override
-  int get hashCode => 0;
 
   /// converts fraction to a string format
   ///

@@ -12,6 +12,8 @@ class Differentiate extends FunctionAtom {
 
   String toString() => "dy/dx(${toInfix()})";
 
+  // takes a single term in the form of ax^n and returns (an)x^(n-1)
+  // throws an error if not in the form of ax^n (not supported)
   static Expression differentiateTerm(Expression term) {
     if (term is Fraction) return Fraction.zero;
     if (term is Power || term is Product || term is Variable) {
@@ -27,6 +29,7 @@ class Differentiate extends FunctionAtom {
 
   @override
   Sum simplify() {
+    // differentiate each term
     List<Expression> sum =
         value.simplifySum().factors.map((t) => differentiateTerm(t)).toList();
     return Sum(sum).simplifySum();

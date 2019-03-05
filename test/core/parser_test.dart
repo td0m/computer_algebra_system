@@ -20,8 +20,8 @@ final throwsInvalidArgumentsError =
 void main() {
   /// 3.a tested visually, 3.a and 3.b. assumed to be working as all the following tests are
   /// depending on them and there is no easy way of unit testing them separately
-  /// TODO: in testing, prove that 3.a works using the `printTree` function
-  /// TODO: in testing, prove that 3.b works using the `toInfix` function
+  /// TODO: in testing, prove that 3.a works visually using the `printTree` function
+  /// TODO: in testing, prove that 3.b works visually using the `toInfix` function
 
   test("3.c Parser should support whole numbers and decimals", () {
     expect(parse("124"), equals("124"));

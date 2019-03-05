@@ -10,6 +10,7 @@ class Log extends FunctionAtom {
 
   String toString() => "log(${base.toInfix()},${value.toInfix()})";
 
+  // simplifies the log
   @override
   Expression simplify() {
     final base = this.base.simplifyAll();
@@ -23,6 +24,10 @@ class Log extends FunctionAtom {
       }
       if (n == value) return Fraction(i, BigInt.one);
     }
-    return Log(base, value);
+    final simplifiedLog = Log(base, value);
+    // must be already simplified, prevent from simplifying
+    simplifiedLog.simplified = true;
+
+    return simplifiedLog;
   }
 }

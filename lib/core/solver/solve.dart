@@ -26,186 +26,207 @@ class Solution {
   }
 }
 
-// solves algebraic equation
-List<Solution> solveEquality(Expression e) {
-  if (e is Equality) {
-    // rearrange numbers to right, unknows to the right
-    Sum left = Sum([e.left]);
-    Sum right = Sum([e.right]);
+class Solver {
+  // solves algebraic equation
+  static List<Solution> solveEquality(Expression e) {
+    if (e is Equality) {
+      // rearrange numbers to right, unknows to the right
+      Sum left = Sum([e.left]);
+      Sum right = Sum([e.right]);
 
-    final List<Expression> leftTerms = [];
-    final List<Expression> rightTerms = [];
+      final List<Expression> leftTerms = [];
+      final List<Expression> rightTerms = [];
 
-    for (final term in left.factors) {
-      if (Expression.isVariable(term)) {
-        leftTerms.add(term);
-      } else {
-        rightTerms.add(Product([Fraction.minusOne, term]).simplifyAll());
-      }
-    }
-    for (final term in right.factors) {
-      if (Expression.isVariable(term)) {
-        leftTerms.add(Product([Fraction.minusOne, term]).simplifyAll());
-      } else {
-        rightTerms.add(term);
-      }
-    }
-
-    left = Sum(leftTerms).simplifySum();
-    right = Sum(rightTerms).simplifySum();
-
-    if (left.factors.length == 1) {
-      final l = left.factors[0];
-
-      // linear equation
-      if (l is Variable) return [Solution(l.name, right)];
-
-      // exponential
-      if (l is Power) {
-        // a^x = b  ->  x = log_a(b)
-        var a = l.left;
-        var x = l.right;
-        if (a is Fraction && x is Variable) {
-          return [Solution(x.name, Log(a, right).simplifyAll())];
-        } else if (a is Variable && x is Fraction) {
-          return [Solution(a.name, Power(right, x.reciprocal()).simplifyAll())];
+      // rearrange variables to the left, numerical values to the right
+      for (final term in left.factors) {
+        if (Expression.isVariable(term)) {
+          leftTerms.add(term);
         } else {
-          return solveEquality(Equality(x, Log(a, right)).simplifyAll());
+          rightTerms.add(Product([Fraction.minusOne, term]).simplifyAll());
+        }
+      }
+      for (final term in right.factors) {
+        if (Expression.isVariable(term)) {
+          leftTerms.add(Product([Fraction.minusOne, term]).simplifyAll());
+        } else {
+          rightTerms.add(term);
         }
       }
 
-      // if any of the coefficients on the left side are fractions, they are moved to the right
-      if (l is Product) {
-        List<Expression> newLeft = [];
-        Expression newRight = right;
+      // simplify both sides of the equation
+      left = Sum(leftTerms).simplifySum();
+      right = Sum(rightTerms).simplifySum();
 
-        for (final term in l.terms) {
-          if (term is Fraction) {
-            newRight = Product([newRight, Power(term, Fraction.minusOne)])
-                .simplifyAll();
+      // if its in the form of
+      // a = ... or ab = ...
+      // not in e.g. a + b = ...
+      if (left.factors.length == 1) {
+        final l = left.factors[0];
+
+        // linear equation, already solved
+        if (l is Variable) return [Solution(l.name, right)];
+
+        // exponential
+        if (l is Power) {
+          // a^x = b  ->  x = log_a(b)
+          var a = l.left;
+          var x = l.right;
+          // number to the power of a variable
+          if (a is Fraction && x is Variable) {
+            return [Solution(x.name, Log(a, right).simplifyAll())];
+          } else if (a is Variable && x is Fraction) {
+            // variable to the power of a fraction
+            return [
+              Solution(a.name, Power(right, x.reciprocal()).simplifyAll())
+            ];
           } else {
-            newLeft.add(term);
+            // more complex equation, apply log of `a` to both sides
+            return Solver.solveEquality(
+                Equality(x, Log(a, right)).simplifyAll());
           }
         }
-        return solveEquality(
-          Equality(Product(newLeft), newRight).simplifyAll(),
-        );
-      }
-    } else if (left.factors.length == 2) {
-      // two factors on the left
-      final l1 = left.factors[0];
-      final l2 = left.factors[1];
 
-      if (Expression.isVariable(l1) &&
-          Expression.isVariable(l2) &&
-          Expression.tryGetVariable(l1).length == 1) {
-        // quadratic
-        if (Expression.tryGetVariable(l1) == Expression.tryGetVariable(l2)) {
-          Fraction a = Expression.getFractionalCoefficient(l1);
-          Fraction b = Expression.getFractionalCoefficient(l2);
+        // if any of the coefficients on the left side are fractions, they divided from both sides
+        if (l is Product) {
+          List<Expression> newLeft = [];
+          Expression newRight = right;
 
-          Fraction p1 = Expression.getPower(l1);
-          Fraction p2 = Expression.getPower(l2);
-
-          if (p1 == Fraction.fromInt(2) && p2 == Fraction.fromInt(1)) {
-          } else if (p1 == Fraction.fromInt(1) && p2 == Fraction.fromInt(2)) {
-            Fraction temp = a;
-            a = b;
-            b = temp;
-          } else {
-            throw Exception("invalid powers $p1 and $p2");
+          for (final term in l.terms) {
+            if (term is Fraction) {
+              newRight = Product([newRight, Power(term, Fraction.minusOne)])
+                  .simplifyAll();
+            } else {
+              newLeft.add(term);
+            }
           }
-
-          Fraction c = (right.factors.first as Fraction).negate();
-          String symbol = Expression.tryGetVariable(l1);
-
-          final solutions = solveQuadratic(a, b, c);
-          return solutions.map((result) => Solution(symbol, result)).toList();
+          return Solver.solveEquality(
+            Equality(Product(newLeft), newRight).simplifyAll(),
+          );
         }
-        // simultaneous equation
-        else {
-          return [
-            Solution(
-              Expression.tryGetVariable(l1),
-              Expression.getFractionalCoefficient(l1),
-              isSimultaneous: true,
-            ),
-            Solution(
-              Expression.tryGetVariable(l2),
-              Expression.getFractionalCoefficient(l2),
-              isSimultaneous: true,
-            ),
-            Solution("_", right, isSimultaneous: true)
-          ];
+      } else if (left.factors.length == 2) {
+        // two factors on the left]
+        // a + b = ...
+        final l1 = left.factors[0];
+        final l2 = left.factors[1];
+
+        // if both a and b are variables
+        if (Expression.isVariable(l1) &&
+            Expression.isVariable(l2) &&
+            Expression.tryGetVariable(l1).length == 1) {
+          // quadratic
+          if (Expression.tryGetVariable(l1) == Expression.tryGetVariable(l2)) {
+            Fraction a = Expression.getFractionalCoefficient(l1);
+            Fraction b = Expression.getFractionalCoefficient(l2);
+
+            Fraction p1 = Expression.getPower(l1);
+            Fraction p2 = Expression.getPower(l2);
+
+            // check if powers are valid for a quadratic
+            if (p1 == Fraction.fromInt(2) && p2 == Fraction.fromInt(1)) {
+            } else if (p1 == Fraction.fromInt(1) && p2 == Fraction.fromInt(2)) {
+              Fraction temp = a;
+              a = b;
+              b = temp;
+            } else {
+              throw Exception("invalid powers $p1 and $p2");
+            }
+
+            Fraction c = (right.factors.first as Fraction).negate();
+            String symbol = Expression.tryGetVariable(l1);
+
+            // solve quadratic
+            final solutions = solveQuadratic(a, b, c);
+            return solutions.map((result) => Solution(symbol, result)).toList();
+          }
+          // simultaneous equation
+          else {
+            // solve simultaneous equation
+            return [
+              Solution(
+                Expression.tryGetVariable(l1),
+                Expression.getFractionalCoefficient(l1),
+                isSimultaneous: true,
+              ),
+              Solution(
+                Expression.tryGetVariable(l2),
+                Expression.getFractionalCoefficient(l2),
+                isSimultaneous: true,
+              ),
+              Solution("_", right, isSimultaneous: true)
+            ];
+          }
         }
       }
+      print("${left.toInfix()} = ${right.toInfix()}");
     }
-    print("${left.toInfix()} = ${right.toInfix()}");
+    throw Exception("equation not supported");
   }
-  throw Exception("equation not supported");
-}
 
-List<Expression> solveQuadratic(Fraction a, Fraction b, Fraction c) {
-  Fraction discriminant = (b * b) - (Fraction.fromInt(4) * a * c);
-  if (discriminant.numerator < BigInt.zero)
-    throw Exception(
-        "discriminant = $discriminant, which is below zero, therefore no solutions");
+  static List<Expression> solveQuadratic(Fraction a, Fraction b, Fraction c) {
+    Fraction discriminant = (b * b) - (Fraction.fromInt(4) * a * c);
+    if (discriminant.numerator < BigInt.zero)
+      throw Exception(
+          "discriminant = $discriminant, which is below zero, therefore no solutions");
 
-  Fraction divident = Fraction.fromInt(2) * a;
+    Fraction divident = Fraction.fromInt(2) * a;
 
-  Expression x1 = Product([
-    Sum([b.negate(), sqrt(discriminant)]),
-    divident.reciprocal()
-  ]).simplifyAll();
-  if (discriminant == Fraction.zero) return [x1];
-  Expression x2 = Product([
-    Sum([
-      b.negate(),
-      Product([Fraction.minusOne, sqrt(discriminant)])
-    ]),
-    divident.reciprocal()
-  ]).simplifyAll();
-  return [x1, x2];
-}
-
-Expression sqrt(Fraction other) => other ^ Fraction.fromInt(1, 2);
-
-List<Solution> solveSimultaneously(
-  List<Solution> first,
-  List<Solution> second,
-) {
-  var map = <String, List<Fraction>>{};
-  final solutions = first;
-  solutions.addAll(second);
-
-  for (final s in solutions) {
-    if (!map.containsKey(s.name)) map[s.name] = [];
-    map[s.name].add(s.value);
+    Expression x1 = Product([
+      Sum([b.negate(), Solver.sqrt(discriminant)]),
+      divident.reciprocal()
+    ]).simplifyAll();
+    if (discriminant == Fraction.zero) return [x1];
+    Expression x2 = Product([
+      Sum([
+        b.negate(),
+        Product([Fraction.minusOne, Solver.sqrt(discriminant)])
+      ]),
+      divident.reciprocal()
+    ]).simplifyAll();
+    return [x1, x2];
   }
-  List<Fraction> a;
-  List<Fraction> b;
-  List<Fraction> c;
-  String aKey;
-  String bKey;
-  if (map.keys.length != 3) throw Exception();
-  for (final key in map.keys) {
-    if (map[key].length != 2) throw Exception("not a simultaneous equation");
-    if (key == "_")
-      c = map[key];
-    else if (a == null) {
-      a = map[key];
-      aKey = key;
-    } else {
-      b = map[key];
-      bKey = key;
+
+  // helper function that gives the square root of a fraction
+  static Expression sqrt(Fraction fraction) =>
+      fraction ^ Fraction.fromInt(1, 2);
+
+  // given two solutions with simultaneous=true attributes,
+  static List<Solution> solveSimultaneously(
+    List<Solution> first,
+    List<Solution> second,
+  ) {
+    var map = <String, List<Fraction>>{};
+    final solutions = first;
+    solutions.addAll(second);
+
+    for (final s in solutions) {
+      if (!map.containsKey(s.name)) map[s.name] = [];
+      map[s.name].add(s.value);
     }
+    List<Fraction> a;
+    List<Fraction> b;
+    List<Fraction> c;
+    String aKey;
+    String bKey;
+    if (map.keys.length != 3) throw Exception();
+    for (final key in map.keys) {
+      if (map[key].length != 2) throw Exception("not a simultaneous equation");
+      if (key == "_")
+        c = map[key];
+      else if (a == null) {
+        a = map[key];
+        aKey = key;
+      } else {
+        b = map[key];
+        bKey = key;
+      }
+    }
+    final aResult =
+        ((c[0] * b[1]) - (b[0] * c[1])) / ((b[1] * a[0]) - (a[1] * b[0]));
+    final bResult =
+        ((c[1] * a[0]) - (a[1] * c[0])) / ((b[1] * a[0]) - (a[1] * b[0]));
+    return [
+      Solution(aKey, aResult),
+      Solution(bKey, bResult),
+    ];
   }
-  final aResult =
-      ((c[0] * b[1]) - (b[0] * c[1])) / ((b[1] * a[0]) - (a[1] * b[0]));
-  final bResult =
-      ((c[1] * a[0]) - (a[1] * c[0])) / ((b[1] * a[0]) - (a[1] * b[0]));
-  return [
-    Solution(aKey, aResult),
-    Solution(bKey, bResult),
-  ];
 }

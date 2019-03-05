@@ -5,6 +5,7 @@ import './product.dart';
 import './power.dart';
 import './equality.dart';
 
+// extended by any binary expressions such as power or equality
 abstract class Binary extends Expression {
   final String operator;
   final Expression left;

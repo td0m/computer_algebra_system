@@ -7,6 +7,7 @@ import 'package:computer_algebra_system/core/expression/sum.dart';
 import 'package:computer_algebra_system/core/lexer/lexer.dart';
 import 'package:computer_algebra_system/core/parser.dart';
 
+// this map stores exact sin values
 Map<BigInt, Expression> exactSinValues = {
   BigInt.zero: Fraction.zero,
   BigInt.from(30): Fraction.fromInt(1, 2),
@@ -15,6 +16,8 @@ Map<BigInt, Expression> exactSinValues = {
   BigInt.from(90): Fraction.one,
 };
 
+// converts a larger sin value to a standard sin value
+// based on the sin function repeating itself (period) every 360 degrees.
 BigInt simplifySinValue(BigInt value) {
   final multiplier = value ~/ BigInt.from(360);
   return value - (BigInt.from(360) * multiplier);
@@ -26,6 +29,8 @@ class Sin extends FunctionAtom {
 
   String toString() => "sin(${value.toInfix()})";
 
+  // adds support for other sin values not included in the standard values
+  // operates based on knowing that the sin value is a reflection of itself for 180 degrees every 180 degrees
   @override
   Expression simplify() {
     final val = value.simplifyAll();
@@ -50,6 +55,7 @@ class Cos extends FunctionAtom {
 
   String toString() => "cos(${value.toInfix()})";
 
+  // converting cos to sin and simplifying the sin function
   @override
   Expression simplify() {
     final value = Sin(Sum([this.value, Fraction.fromInt(90)])).simplifyAll();
@@ -64,6 +70,7 @@ class Tan extends FunctionAtom {
 
   String toString() => "tan(${value.toInfix()})";
 
+  // converts tan to sin/cos and simplifies both sin and cos
   @override
   Expression simplify() {
     final val = value.simplifyAll();

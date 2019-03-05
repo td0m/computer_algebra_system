@@ -11,6 +11,8 @@ class Magnitude extends FunctionAtom {
 
   String toString() => "magnitude(${vector.toInfix()})";
 
+  // magnitude is calculated by getting the square root of the sum of all the terms squared
+  // e.g. magnitude(Vector[3,2]) -> sqrt(3^2 + 2^2) -> sqrt(13)
   @override
   Expression simplify() {
     final termsSquared =

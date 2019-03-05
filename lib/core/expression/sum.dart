@@ -1,10 +1,8 @@
 import 'package:computer_algebra_system/core/expression/fraction.dart';
 import 'package:computer_algebra_system/core/expression/power.dart';
 import 'package:computer_algebra_system/core/expression/product.dart';
-import 'package:computer_algebra_system/core/expression/variable.dart';
 import 'package:computer_algebra_system/core/expression/vector.dart';
 import 'package:computer_algebra_system/core/errors.dart';
-import 'package:computer_algebra_system/core/lexer/fsm.dart';
 import 'package:computer_algebra_system/core/lexer/lexer.dart';
 import 'package:computer_algebra_system/core/parser.dart';
 

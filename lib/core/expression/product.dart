@@ -59,12 +59,13 @@ class Product extends Expression {
       }
     }
     for (final base in map.keys) {
-      // need to do basic product simplification here in order to avoid a stack overflow
+      // need to do basic product simplification here in order to avoid an infinite loop
       Expression baseE = Parser().parse(Lexer().tokenize(base));
       if (baseE is Product && baseE.factors.length == 1)
         baseE = (baseE as Product).factors.first;
       else if (baseE is Product && baseE.factors.length == 0)
         baseE = Fraction.zero;
+      // prevents the program from going into an infinite loop
       baseE.simplified = true;
       final powerE = Sum(map[base]).simplifyAll();
       factors.add(Power(baseE, powerE).simplifyAll());

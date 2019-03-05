@@ -51,7 +51,7 @@ class Parser {
     }
     return left;
   }
-
+  
   Expression _parseNext() {
     if (_next.type == TokenType.Add) {
       _consume();
@@ -109,6 +109,7 @@ class Parser {
     }
   }
 
+  // gets the precedence of a token
   static int getPrecedence(TokenType type) {
     switch (type) {
       case TokenType.Equals:
@@ -128,6 +129,7 @@ class Parser {
     }
   }
 
+  // converts a string symbol to a token type
   static TokenType tokenFromSymbol(String s) {
     switch (s) {
       case "=":
@@ -147,6 +149,7 @@ class Parser {
     }
   }
 
+  // returns true if the given token is a binary operator
   static bool _isBinaryOperator(Token t) {
     switch (t.type) {
       case TokenType.Equals:
@@ -161,19 +164,25 @@ class Parser {
     }
   }
 
+  // returns true if the token is right associative (only ^ power operator)
   static bool _isRightAssociative(Token t) {
     if (t.type == TokenType.Power) return true;
     return false;
   }
 
+  // in some cases, such as e.g. 5 * (-2), the - is not a binary operator
+  // it is what we call a unary operator which only takes in one argument
   static bool _isUnary(Token t) => t.type == TokenType.Subtract;
 
+
+  // if a token is a "-" token, its negated value will be added
   static Token _toUnary(Token t) {
     TokenType type = t.type;
     if (t.type == TokenType.Subtract) type = TokenType.Negate;
     return Token(type, t.lexeme);
   }
 
+  // returns true if the token is a valid function
   static bool _isFunction(Token t) {
     if (t.type != TokenType.String) return false;
     final name = t.lexeme.toLowerCase();
